@@ -1,7 +1,7 @@
-import './style.css'
 import TravellerCompanion from './components/TravellerCompanion.vue'
 import { useTourStore } from './stores/tourStore'
 import { travellerTutorials } from './config/tutorials'
+import './style.css'
 
 // Create the Vue plugin
 const createTravellerPlugin = () => ({
