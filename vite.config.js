@@ -8,29 +8,16 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.js'),
       name: 'CosmicCompanionAI',
-      formats: ['es', 'umd'],
-      fileName: (format) => `cosmic-companion-ai.${format === 'umd' ? 'umd.cjs' : 'js'}`
+      fileName: (format) => `cosmic-companion-ai.${format === 'es' ? 'js' : 'umd.cjs'}`
     },
     rollupOptions: {
       external: ['vue', 'pinia'],
       output: {
-        exports: 'named',
         globals: {
           vue: 'Vue',
           pinia: 'Pinia'
-        },
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return 'style.css';
-          return assetInfo.name;
         }
       }
-    },
-    sourcemap: true,
-    minify: false
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
     }
   }
 })
