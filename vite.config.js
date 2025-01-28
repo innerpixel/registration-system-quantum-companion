@@ -25,6 +25,13 @@ export default defineConfig({
         }
       }
     },
-    cssCodeSplit: false
+    cssCodeSplit: false,
+    sourcemap: true
+  },
+  server: {
+    cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    }
   }
 })
