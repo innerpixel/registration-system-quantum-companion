@@ -8,7 +8,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.js'),
       name: 'CosmicCompanionAI',
-      fileName: (format) => `cosmic-companion-ai.${format}.js`
+      formats: ['es', 'umd'],
+      fileName: (format) => `cosmic-companion-ai.${format === 'umd' ? 'umd.cjs' : 'js'}`
     },
     rollupOptions: {
       external: ['vue', 'pinia'],
@@ -16,8 +17,11 @@ export default defineConfig({
         globals: {
           vue: 'Vue',
           pinia: 'Pinia'
-        }
+        },
+        exports: 'named'
       }
-    }
+    },
+    cssCodeSplit: true,
+    sourcemap: true
   }
 })
