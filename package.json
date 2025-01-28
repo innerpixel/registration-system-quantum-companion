@@ -5,16 +5,14 @@
   "type": "module",
   "main": "./dist/cosmic-companion-ai.umd.cjs",
   "module": "./dist/cosmic-companion-ai.js",
-  "types": "./dist/types/index.d.ts",
   "style": "./dist/style.css",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
       "import": "./dist/cosmic-companion-ai.js",
-      "require": "./dist/cosmic-companion-ai.umd.cjs",
-      "default": "./dist/cosmic-companion-ai.js"
+      "require": "./dist/cosmic-companion-ai.umd.cjs"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./dist/*": "./dist/*"
   },
   "files": [
     "dist"
