@@ -18,10 +18,19 @@ export default defineConfig({
           vue: 'Vue',
           pinia: 'Pinia'
         },
-        exports: 'named'
+        exports: 'named',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') return 'style.css';
+          return assetInfo.name;
+        }
       }
     },
-    cssCodeSplit: true,
+    cssCodeSplit: false,
     sourcemap: true
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
   }
 })

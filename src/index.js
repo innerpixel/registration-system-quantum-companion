@@ -5,8 +5,10 @@ import { travellerTutorials } from './config/tutorials'
 export { TravellerCompanion, useTourStore, travellerTutorials }
 
 // Auto-install if Vue is found
-export default {
-  install: (app) => {
+const plugin = {
+  install(app) {
     app.component('TravellerCompanion', TravellerCompanion)
   }
 }
+
+export default plugin
