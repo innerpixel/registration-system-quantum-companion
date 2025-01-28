@@ -25,13 +25,12 @@ export default defineConfig({
         }
       }
     },
-    cssCodeSplit: false,
-    sourcemap: true
+    sourcemap: true,
+    minify: false
   },
-  server: {
-    cors: true,
-    headers: {
-      'Access-Control-Allow-Origin': '*'
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
     }
   }
 })
