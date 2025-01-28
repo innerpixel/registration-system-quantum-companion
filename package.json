@@ -8,17 +8,13 @@
   "style": "dist/style.css",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
       "import": "./dist/cosmic-companion-ai.js",
-      "require": "./dist/cosmic-companion-ai.umd.cjs",
-      "style": "./dist/style.css"
+      "require": "./dist/cosmic-companion-ai.umd.cjs"
     },
-    "./dist/style.css": "./dist/style.css",
-    "./package.json": "./package.json"
+    "./style.css": "./dist/style.css"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "dev": "vite",
