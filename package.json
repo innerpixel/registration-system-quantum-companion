@@ -3,17 +3,23 @@
   "version": "1.0.0",
   "description": "An AI companion component for space-themed Vue applications",
   "type": "module",
-  "main": "./dist/cosmic-companion-ai.umd.cjs",
-  "module": "./dist/cosmic-companion-ai.js",
-  "files": [
-    "dist"
-  ],
+  "main": "dist/cosmic-companion-ai.umd.cjs",
+  "module": "dist/cosmic-companion-ai.js",
+  "style": "dist/style.css",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/cosmic-companion-ai.js",
-      "require": "./dist/cosmic-companion-ai.umd.cjs"
-    }
+      "require": "./dist/cosmic-companion-ai.umd.cjs",
+      "style": "./dist/style.css"
+    },
+    "./dist/style.css": "./dist/style.css",
+    "./package.json": "./package.json"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
