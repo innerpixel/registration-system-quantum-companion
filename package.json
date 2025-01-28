@@ -3,27 +3,21 @@
   "version": "1.0.0",
   "description": "An AI companion component for space-themed Vue applications",
   "type": "module",
-  "main": "dist/cosmic-companion-ai.umd.cjs",
-  "module": "dist/cosmic-companion-ai.js",
-  "style": "dist/style.css",
+  "main": "./dist/cosmic-companion-ai.umd.cjs",
+  "module": "./dist/cosmic-companion-ai.js",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/cosmic-companion-ai.js",
       "require": "./dist/cosmic-companion-ai.umd.cjs"
-    },
-    "./style.css": "./dist/style.css"
+    }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
-  },
-  "dependencies": {
-    "pinia": "^2.1.7",
-    "vue": "^3.3.11"
   },
   "peerDependencies": {
     "vue": "^3.3.0",
@@ -31,7 +25,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vue": "^3.3.11",
+    "pinia": "^2.1.7"
   },
   "keywords": [
     "vue",
@@ -47,9 +43,5 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/innerpixel/cosmic-companion-ai.git"
-  },
-  "bugs": {
-    "url": "https://github.com/innerpixel/cosmic-companion-ai/issues"
-  },
-  "homepage": "https://github.com/innerpixel/cosmic-companion-ai#readme"
+  }
 }
