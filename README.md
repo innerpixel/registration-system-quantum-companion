@@ -1,11 +1,37 @@
 # Cosmic Companion AI
 
-An AI companion component for space-themed Vue applications. This component provides an interactive AI assistant that helps users navigate and interact with your space application.
+An ethereal AI companion component for space-themed Vue applications. This component provides an interactive, luminous AI assistant that helps users navigate quantum realities and interact with your space application.
+
+## Features
+
+- **Quantum Reality Integration**
+  - Reality branch navigation
+  - Coherence level monitoring
+  - Achievement tracking
+
+- **Ethereal UI Design**
+  - Luminous, transparent interfaces
+  - Radial gradients and glowing effects
+  - Smooth animations and transitions
+
+- **Interactive Tutorial System**
+  - Guided quantum tours
+  - Reality branch exploration
+  - Achievement unlocks
+
+- **Advanced Styling**
+  - Tailwind integration
+  - Custom CSS effects
+  - Responsive design
 
 ## Installation
 
 ```bash
+# Install from GitHub
 npm install git+https://github.com/innerpixel/cosmic-companion-ai.git
+
+# Or install locally
+npm install --save file:./cosmic-companion-ai
 ```
 
 ## Usage
@@ -15,6 +41,7 @@ npm install git+https://github.com/innerpixel/cosmic-companion-ai.git
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createTravellerPlugin } from 'cosmic-companion-ai'
+import './style.css'  // Import your styles
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -25,20 +52,58 @@ app.use(createTravellerPlugin)
 app.mount('#app')
 ```
 
-2. Use the component in your Vue files:
+2. Use the component with enhanced styling:
 ```vue
 <script setup>
-import { TravellerCompanion } from 'cosmic-companion-ai'
+import { ref, onMounted } from 'vue'
+import { TravellerCompanion, useTourStore, travellerTutorials } from 'cosmic-companion-ai'
+
+const tourStore = useTourStore()
+const welcomeMessage = ref('Welcome to the quantum realm!')
+
+onMounted(async () => {
+  await tourStore.loadTutorials()
+  if (travellerTutorials.quantum) {
+    tourStore.startTour('quantum')
+  }
+})
 </script>
 
 <template>
-  <TravellerCompanion />
+  <div class="companion-container">
+    <!-- Ethereal Background -->
+    <div class="absolute inset-0 bg-gradient-radial from-cyan-500/10 via-indigo-500/5 to-transparent rounded-lg"></div>
+    
+    <!-- Glowing Border -->
+    <div class="absolute inset-0 rounded-lg border border-cyan-400/30 glow-border"></div>
+    
+    <!-- Content -->
+    <div class="relative p-8 backdrop-blur-md bg-black/20">
+      <TravellerCompanion 
+        :initialMessage="welcomeMessage"
+        class="companion-content" />
+    </div>
+  </div>
 </template>
+
+<style>
+.companion-container {
+  position: relative;
+}
+
+.glow-border {
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.1),
+              inset 0 0 15px rgba(34, 211, 238, 0.1);
+}
+
+.companion-content {
+  position: relative;
+  z-index: 10;
+}
+</style>
 ```
 
 ## Package Structure
-
-The package is structured to work optimally with Vite and Vue 3:
 
 ```
 cosmic-companion-ai/
@@ -51,99 +116,68 @@ cosmic-companion-ai/
 │   │   └── tutorials.js
 │   ├── style.css
 │   └── index.js
+├── docs/
+│   ├── TECHNICAL_IMPLEMENTATION.md
+│   ├── TROUBLESHOOTING.md        # New!
+│   ├── AI_ASSISTANT_GUIDE.md
+│   └── FEATURE_BRAINSTORM.md
 ├── package.json
 └── vite.config.js
 ```
 
-## Package Configuration
+## Documentation
 
-### package.json
-```json
-{
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./src/index.js",
-      "require": "./dist/cosmic-companion-ai.umd.cjs"
-    },
-    "./style.css": "./src/style.css"
-  },
-  "main": "./dist/cosmic-companion-ai.umd.cjs",
-  "module": "./src/index.js",
-  "files": [
-    "dist",
-    "src"
-  ]
-}
-```
+- [Technical Implementation](./docs/TECHNICAL_IMPLEMENTATION.md)
+- [Troubleshooting Guide](./docs/TROUBLESHOOTING.md)
+- [AI Assistant Guide](./docs/AI_ASSISTANT_GUIDE.md)
+- [Feature Brainstorm](./docs/FEATURE_BRAINSTORM.md)
 
-### vite.config.js
+## Development
+
+### Tailwind Configuration
+
 ```javascript
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-
-export default defineConfig({
-  plugins: [vue()],
-  build: {
-    lib: {
-      entry: resolve(__dirname, 'src/index.js'),
-      name: 'CosmicCompanionAI',
-      formats: ['es', 'umd'],
-      fileName: (format) => `cosmic-companion-ai.${format === 'es' ? 'js' : 'umd.cjs'}`
-    },
-    rollupOptions: {
-      external: ['vue', 'pinia'],
-      output: {
-        globals: {
-          vue: 'Vue',
-          pinia: 'Pinia'
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}",
+    "./cosmic-companion-ai/src/**/*.{vue,js,ts,jsx,tsx}"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        cosmic: {
+          primary: 'rgb(103, 232, 249)',
+          secondary: 'rgb(34, 211, 238)'
+        }
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
         }
       }
     }
   }
-})
-```
-
-## Development Notes
-
-### Package Resolution
-The package uses modern ES Module resolution with fallbacks:
-1. Direct source access during development
-2. Built files for production
-3. UMD fallback for CommonJS environments
-
-### Plugin Registration
-The plugin is designed as a simple object with an install method:
-```javascript
-const createTravellerPlugin = {
-  install(app) {
-    app.component('TravellerCompanion', TravellerCompanion)
-  }
 }
 ```
 
-### Styles
-Styles are automatically included when importing the component. No need for separate style imports in your application.
+### Style Customization
 
-## Troubleshooting
+The companion uses CSS variables for easy customization:
 
-### Common Issues
-
-1. **Module Resolution Errors**
-   - Make sure package.json has correct "exports" field
-   - Include both "src" and "dist" in "files" field
-   - Use direct source imports during development
-
-2. **Style Loading Issues**
-   - Styles are bundled with the component
-   - No need for separate style imports
-   - Vite handles CSS modules automatically
-
-3. **Plugin Registration**
-   - Use `app.use(createTravellerPlugin)` not `app.use(createTravellerPlugin())`
-   - Make sure Pinia is registered before the plugin
-   - Component will be globally available as 'TravellerCompanion'
+```css
+:root {
+  --cosmic-primary: rgb(103, 232, 249);
+  --cosmic-secondary: rgb(34, 211, 238);
+  --cosmic-glow: rgba(34, 211, 238, 0.1);
+  --cosmic-blur: 8px;
+}
+```
 
 ## Contributing
 
@@ -155,4 +189,4 @@ Styles are automatically included when importing the component. No need for sepa
 
 ## License
 
-MIT License - feel free to use in your space adventures!
+MIT License - feel free to use in your quantum adventures!

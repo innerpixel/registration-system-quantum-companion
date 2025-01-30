@@ -1,4 +1,25 @@
 export const travellerTutorials = {
+  quantum: {
+    title: 'Quantum Reality Guide',
+    steps: [
+      {
+        title: 'Welcome to CSMCL Space',
+        content: 'Your journey into quantum reality begins here. Explore the infinite possibilities of parallel existence.'
+      },
+      {
+        title: 'Reality Branches',
+        content: 'Learn about the different reality branches and how to navigate between them safely.'
+      },
+      {
+        title: 'Quantum Coherence',
+        content: 'Understanding quantum coherence levels and maintaining stability across realities.'
+      },
+      {
+        title: 'Achievement System',
+        content: 'Track your progress and earn achievements as you master quantum navigation.'
+      }
+    ]
+  },
   spaceOrientation: {
     title: 'Space Orientation',
     steps: [
