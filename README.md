@@ -190,3 +190,126 @@ The companion uses CSS variables for easy customization:
 ## License
 
 MIT License - feel free to use in your quantum adventures!
+
+# Cosmic Companion AI
+
+An interactive quantum-aware AI companion for your Vue.js applications.
+
+## Features
+
+- Real-time quantum statistics
+- Dynamic state management with Pinia
+- Role-based quantum metrics
+- Beautiful quantum-themed UI
+- Built-in error handling
+
+## Installation
+
+```bash
+npm install cosmic-companion-ai
+```
+
+## Quick Start
+
+```javascript
+import { TravellerCompanion, useQuantumNexusStore } from 'cosmic-companion-ai'
+
+// In your Vue component
+export default {
+  components: {
+    TravellerCompanion
+  },
+  setup() {
+    const quantumStore = useQuantumNexusStore()
+    return { quantumStore }
+  }
+}
+```
+
+## Store Integration
+
+### Quantum Nexus Store
+
+The quantum nexus store provides real-time quantum metrics based on user roles:
+
+```javascript
+const { nexusStats } = storeToRefs(quantumStore)
+const { formatMetric } = quantumStore
+
+// Access quantum metrics
+const metrics = computed(() => ({
+  coherence: formatMetric(nexusStats.value?.coherence || 0),
+  entanglement: formatMetric(nexusStats.value?.entanglement || 0),
+  connections: nexusStats.value?.connections || 0
+}))
+```
+
+### Auth Store Integration
+
+```javascript
+import { useAuthStore } from 'cosmic-companion-ai'
+
+const authStore = useAuthStore()
+// User roles: admin, quantum-engineer, researcher, standard
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Store Initialization**
+   ```javascript
+   // Ensure proper store initialization
+   import { storeToRefs } from 'pinia'
+   const { nexusStats } = storeToRefs(quantumStore)
+   const { formatMetric } = quantumStore // Direct method access
+   ```
+
+2. **Null Safety**
+   ```javascript
+   // Use optional chaining and defaults
+   const stats = nexusStats.value || {}
+   const coherence = formatMetric(stats.coherence || 0)
+   ```
+
+3. **Component Updates**
+   ```javascript
+   // Proper computed property setup
+   const metrics = computed(() => {
+     const stats = nexusStats.value || {}
+     return {
+       coherence: formatMetric(stats.coherence || 0),
+       // ... other metrics
+     }
+   })
+   ```
+
+### Best Practices
+
+1. **Store Setup**
+   - Initialize stores before component mounting
+   - Use `storeToRefs` for reactive properties
+   - Access methods directly from store
+
+2. **Error Handling**
+   - Add error boundaries in parent components
+   - Use optional chaining for nested properties
+   - Provide fallback values for all metrics
+
+3. **Performance**
+   - Use computed properties for derived values
+   - Implement proper cleanup in `onUnmounted`
+   - Monitor quantum metric update frequency
+
+## Recent Updates
+
+### v1.1.0
+- Added quantum nexus statistics
+- Enhanced error handling
+- Improved null safety
+- Added role-based metrics
+- Dynamic status indicators
+
+## License
+
+MIT License - See LICENSE file for details

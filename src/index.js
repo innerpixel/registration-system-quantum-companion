@@ -1,5 +1,7 @@
 import TravellerCompanion from './components/TravellerCompanion.vue'
 import { useTourStore } from './stores/tourStore'
+import { useAuthStore } from './stores/authStore'
+import { useQuantumNexusStore } from './stores/quantumNexusStore'
 import { travellerTutorials } from './config/tutorials'
 import './style.css'
 
@@ -13,6 +15,8 @@ const createTravellerPlugin = {
 export {
   TravellerCompanion,
   useTourStore,
+  useAuthStore,
+  useQuantumNexusStore,
   travellerTutorials,
   createTravellerPlugin
 }
