@@ -1,165 +1,66 @@
 <template>
-  <div class="app-container">
-    <header class="main-header">
-      <nav class="main-nav">
-        <div class="logo">
-          <img src="@/assets/logo.svg" alt="Logo" />
-          <span>Cosmic User Management</span>
+  <div class="min-h-screen bg-gray-900 text-white">
+    <header class="bg-gray-800 shadow-lg">
+      <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <img src="@/assets/logo.svg" alt="Logo" class="h-8 w-8" />
+          <span class="text-xl font-semibold">Cosmic User Management</span>
         </div>
         <NavMenu :items="menuItems" />
-        <div class="user-menu" v-if="authStore.isAuthenticated">
-          <div class="user-dropdown" @click="toggleDropdown">
-            <div class="user-avatar">
-              <img :src="authStore.userAvatar" alt="User avatar" />
-            </div>
-            <span>{{ authStore.user?.username }}</span>
-            <div v-if="showDropdown" class="dropdown-menu">
-              <button @click="handleCommand('profile')">Profile</button>
-              <button @click="handleCommand('settings')">Settings</button>
-              <button @click="handleCommand('logout')">Logout</button>
+        <div v-if="authStore.isAuthenticated" class="relative">
+          <div class="flex items-center space-x-3 cursor-pointer" @click="toggleDropdown">
+            <img :src="authStore.userAvatar" alt="User avatar" class="h-8 w-8 rounded-full" />
+            <span class="text-sm font-medium">{{ authStore.user?.username }}</span>
+            <div v-if="showDropdown" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl py-2">
+              <button @click="handleCommand('profile')" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Profile</button>
+              <button @click="handleCommand('settings')" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Settings</button>
+              <button @click="handleCommand('logout')" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Logout</button>
             </div>
           </div>
         </div>
       </nav>
     </header>
-    <main class="main-content">
+
+    <main class="container mx-auto px-4 py-8">
       <router-view></router-view>
     </main>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import NavMenu from '@/components/ui/NavMenu.vue'
+import NavMenu from '@/components/NavMenu.vue'
 
-export default {
-  name: 'App',
-  components: {
-    NavMenu
-  },
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const showDropdown = ref(false)
-    
-    const menuItems = [
-      { path: '/dashboard', label: 'Dashboard' },
-      { path: '/users', label: 'System Users' },
-      { path: '/registration', label: 'Register' }
-    ]
+const router = useRouter()
+const authStore = useAuthStore()
+const showDropdown = ref(false)
 
-    const toggleDropdown = () => {
-      showDropdown.value = !showDropdown.value
-    }
+const menuItems = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'System Users', path: '/users' },
+  { label: 'Register', path: '/registration' }
+]
 
-    const handleCommand = async (command) => {
-      showDropdown.value = false
-      switch (command) {
-        case 'profile':
-          router.push('/profile')
-          break
-        case 'settings':
-          router.push('/settings')
-          break
-        case 'logout':
-          await authStore.logout()
-          router.push('/login')
-          break
-      }
-    }
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value
+}
 
-    return {
-      authStore,
-      menuItems,
-      showDropdown,
-      toggleDropdown,
-      handleCommand
-    }
+const handleCommand = (command) => {
+  showDropdown.value = false
+  
+  switch (command) {
+    case 'profile':
+      router.push('/profile')
+      break
+    case 'settings':
+      router.push('/settings')
+      break
+    case 'logout':
+      authStore.logout()
+      router.push('/login')
+      break
   }
 }
 </script>
-
-<style>
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-header {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.main-nav {
-  display: flex;
-  align-items: center;
-  padding: 0 1rem;
-  height: 60px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-right: 2rem;
-}
-
-.logo img {
-  height: 32px;
-  width: auto;
-}
-
-.user-menu {
-  margin-left: auto;
-  position: relative;
-}
-
-.user-dropdown {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.user-avatar img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  padding: 0.5rem 0;
-  min-width: 120px;
-}
-
-.dropdown-menu button {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  text-align: left;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-.dropdown-menu button:hover {
-  background: #f5f7fa;
-}
-
-.main-content {
-  flex: 1;
-  padding: 1rem;
-}
-</style>

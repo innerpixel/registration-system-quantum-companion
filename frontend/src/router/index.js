@@ -4,11 +4,13 @@ import Dashboard from '@/views/Dashboard.vue'
 import UsersList from '@/components/UsersList.vue'
 import Registration from '@/views/Registration.vue'
 import Login from '@/views/Login.vue'
+import LandingPage from '@/components/LandingPage.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    name: 'Landing',
+    component: LandingPage
   },
   {
     path: '/dashboard',
