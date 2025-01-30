@@ -1,24 +1,26 @@
-import { createApp } from 'vue';
-import ElementPlus from 'element-plus';
-import 'element-plus/dist/index.css';
-import App from './App.vue';
-import router from './router';
-import store from './store';
-import axios from 'axios';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
+import App from './App.vue'
+import router from './router'
+import axios from 'axios'
 
 // Configure axios defaults
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 // Create and configure the app
-const app = createApp(App);
+const app = createApp(App)
+
+// Create pinia instance
+const pinia = createPinia()
 
 // Use plugins
-app.use(ElementPlus);
-app.use(router);
-app.use(store);
-
-// Initialize auth state
-store.dispatch('auth/checkAuth');
+app.use(pinia)
+app.use(router)
 
 // Mount the app
-app.mount('#app');
+app.mount('#app')
+
+// Initialize auth state
+const authStore = useAuthStore()
+authStore.checkAuth()

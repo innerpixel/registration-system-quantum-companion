@@ -115,9 +115,10 @@ server {
 
 ### 4. Mail System
 - **MTA**: Postfix
-- **Configuration**:
+- **Configuration** 
+- **SHOULD REFLECT THE CURRENT SYSTEM SETUP THE DOMAIN**
   ```
-  mydomain = local-dev.test
+  mydomain = local-dev.test 
   myhostname = mail.local-dev.test
   inet_interfaces = loopback-only
   home_mailbox = Maildir/

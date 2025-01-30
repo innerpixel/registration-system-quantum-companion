@@ -1,174 +1,165 @@
 <template>
-  <el-container class="app-container">
-    <el-header>
+  <div class="app-container">
+    <header class="main-header">
       <nav class="main-nav">
         <div class="logo">
-          <img src="@/assets/logo.png" alt="Logo" />
+          <img src="@/assets/logo.svg" alt="Logo" />
           <span>Cosmic User Management</span>
         </div>
-        <el-menu
-          mode="horizontal"
-          :router="true"
-          :default-active="currentRoute"
-        >
-          <el-menu-item index="/dashboard">Dashboard</el-menu-item>
-          <el-menu-item index="/users">System Users</el-menu-item>
-          <el-menu-item index="/registration">Register</el-menu-item>
-        </el-menu>
-        <div class="user-menu">
-          <el-dropdown v-if="isLoggedIn" @command="handleCommand">
-            <span class="el-dropdown-link">
-              <el-avatar :size="32" :src="userAvatar" />
-              {{ username }}
-              <i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="profile">Profile</el-dropdown-item>
-                <el-dropdown-item command="settings">Settings</el-dropdown-item>
-                <el-dropdown-item divided command="logout">Logout</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-          <el-button v-else type="primary" @click="login">Login</el-button>
+        <NavMenu :items="menuItems" />
+        <div class="user-menu" v-if="authStore.isAuthenticated">
+          <div class="user-dropdown" @click="toggleDropdown">
+            <div class="user-avatar">
+              <img :src="authStore.userAvatar" alt="User avatar" />
+            </div>
+            <span>{{ authStore.user?.username }}</span>
+            <div v-if="showDropdown" class="dropdown-menu">
+              <button @click="handleCommand('profile')">Profile</button>
+              <button @click="handleCommand('settings')">Settings</button>
+              <button @click="handleCommand('logout')">Logout</button>
+            </div>
+          </div>
         </div>
       </nav>
-    </el-header>
-
-    <el-main>
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </el-main>
-
-    <el-footer>
-      <p>&copy; {{ currentYear }} Cosmic User Management. All rights reserved.</p>
-    </el-footer>
-  </el-container>
+    </header>
+    <main class="main-content">
+      <router-view></router-view>
+    </main>
+  </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import NavMenu from '@/components/ui/NavMenu.vue'
 
 export default {
   name: 'App',
-
+  components: {
+    NavMenu
+  },
   setup() {
-    const route = useRoute();
-    const router = useRouter();
-    const store = useStore();
+    const router = useRouter()
+    const authStore = useAuthStore()
+    const showDropdown = ref(false)
+    
+    const menuItems = [
+      { path: '/dashboard', label: 'Dashboard' },
+      { path: '/users', label: 'System Users' },
+      { path: '/registration', label: 'Register' }
+    ]
 
-    const currentYear = new Date().getFullYear();
-    const isLoggedIn = computed(() => store.state.auth.isLoggedIn);
-    const username = computed(() => store.state.auth.user?.username);
-    const userAvatar = computed(() => 
-      store.state.auth.user?.avatar || 
-      `https://ui-avatars.com/api/?name=${username.value}&background=random`
-    );
-
-    const currentRoute = computed(() => route.path);
+    const toggleDropdown = () => {
+      showDropdown.value = !showDropdown.value
+    }
 
     const handleCommand = async (command) => {
+      showDropdown.value = false
       switch (command) {
-        case 'logout':
-          await store.dispatch('auth/logout');
-          router.push('/login');
-          break;
         case 'profile':
-          router.push('/profile');
-          break;
+          router.push('/profile')
+          break
         case 'settings':
-          router.push('/settings');
-          break;
+          router.push('/settings')
+          break
+        case 'logout':
+          await authStore.logout()
+          router.push('/login')
+          break
       }
-    };
-
-    const login = () => {
-      router.push('/login');
-    };
+    }
 
     return {
-      currentYear,
-      isLoggedIn,
-      username,
-      userAvatar,
-      currentRoute,
-      handleCommand,
-      login
-    };
+      authStore,
+      menuItems,
+      showDropdown,
+      toggleDropdown,
+      handleCommand
+    }
   }
-};
+}
 </script>
 
 <style>
 .app-container {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .main-nav {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  height: 100%;
-  padding: 0 20px;
+  padding: 0 1rem;
+  height: 60px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
+  margin-right: 2rem;
 }
 
 .logo img {
   height: 32px;
-}
-
-.logo span {
-  font-size: 1.2em;
-  font-weight: bold;
+  width: auto;
 }
 
 .user-menu {
-  display: flex;
-  align-items: center;
+  margin-left: auto;
+  position: relative;
 }
 
-.el-dropdown-link {
+.user-dropdown {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.user-avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  padding: 0.5rem 0;
+  min-width: 120px;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  border: none;
+  background: none;
   cursor: pointer;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.dropdown-menu button:hover {
+  background: #f5f7fa;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.el-header {
-  background-color: #fff;
-  border-bottom: 1px solid #e6e6e6;
-  padding: 0;
-}
-
-.el-footer {
-  text-align: center;
-  color: #666;
-  padding: 20px;
-  background-color: #f5f7fa;
-}
-
-.el-main {
-  background-color: #f5f7fa;
-  padding: 20px;
+.main-content {
+  flex: 1;
+  padding: 1rem;
 }
 </style>

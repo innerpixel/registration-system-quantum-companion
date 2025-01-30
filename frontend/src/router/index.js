@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '@/views/Dashboard.vue';
-import UsersList from '@/components/UsersList.vue';
-import Registration from '@/views/Registration.vue';
-import Login from '@/views/Login.vue';
-import store from '@/store';
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import Dashboard from '@/views/Dashboard.vue'
+import UsersList from '@/components/UsersList.vue'
+import Registration from '@/views/Registration.vue'
+import Login from '@/views/Login.vue'
 
 const routes = [
   {
@@ -49,26 +49,21 @@ const routes = [
     component: () => import('@/views/Settings.vue'),
     meta: { requiresAuth: true }
   }
-];
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
-});
+})
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.state.auth.isLoggedIn) {
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath }
-      });
-    } else {
-      next();
-    }
+  const authStore = useAuthStore()
+  
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login')
   } else {
-    next();
+    next()
   }
-});
+})
 
-export default router;
+export default router

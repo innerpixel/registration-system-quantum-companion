@@ -37,12 +37,12 @@
      - Must contain mix of characters
      - Stored with bcrypt hashing
 
-5. **SIM Emergency Frequency**
+5. **SIM (phone number) Interplanetary Emergency Frequency ;)**
    - Purpose: Future emergency protocols
-   - Example: `CSMC123`
+   - Example: `+1234567890`
    - Requirements:
      - Must be unique
-     - Format validation (TBD)
+     - Format validation (TBD) ?!? what is dit ?!?
 
 ## Validation Process
 
@@ -61,9 +61,9 @@ async function validateRegistration(data) {
     const displayNameExists = await checkDisplayName(data.displayName);
     const isValidDisplayName = data.displayName.length >= 3;
 
-    // 4. SIM Frequency Validation
-    const simFrequencyExists = await checkSimFrequency(data.simFrequency);
-    const isValidSimFrequency = /^CSMC\d{3}$/.test(data.simFrequency);
+    // 4. SIM Emergency frequency = phone validation but we can ask it ..  
+    We can better integrate the phone validation during the web3 integration, kyc and other complyances  
+    
 
     // All validations must pass
     return {
@@ -134,7 +134,7 @@ const UserSchema = {
         type: String,
         required: true,
         unique: true,
-        match: /^CSMC\d{3}$/
+        match: '+1234567890' 
     },
     
     // Status Flags
@@ -159,146 +159,374 @@ const UserSchema = {
 
 ## Registration Flow
 
-1. **Frontend Validation**
-   ```javascript
-   // Initial client-side validation
-   validateForm(formData) {
-       // Username format
-       // Email format
-       // Password strength
-       // Required fields
-   }
+### Overview
+The registration process is designed to be secure and reliable, with proper validation at each step and clear error handling. The process includes username validation, system user creation, email verification, and status tracking.
+
+### Registration States
+Each registration attempt goes through several states, tracked in the `registrationStatus` field:
+
+1. `INITIATED`
+   - Initial state when registration request is received
+   - Validates all input fields
+   - Checks username and email availability
+
+2. `USERNAME_VALIDATED`
+   - Username format validated
+   - Username availability confirmed
+   - No existing user with same email or SIM frequency
+
+3. `USER_CREATED`
+   - User record created in MongoDB
+   - Password hashed and stored
+   - Initial profile data saved
+
+4. `SYSTEM_USER_CREATED`
+   - System user account created
+   - System email assigned (`username@local.domain`)
+   - Integration with system services completed
+
+5. `MAIL_CONFIGURED`
+   - Email settings configured
+   - Verification token generated
+   - Token expiration set (24 hours)
+
+6. `VERIFICATION_SENT`
+   - Verification email sent to personal email
+   - Contains verification link with token
+   - User notified to check email
+
+7. `VERIFIED`
+   - Email verification completed
+   - Account fully activated
+   - User can now log in
+
+8. `FAILED`
+   - Registration process failed
+   - Contains error details and last successful step
+   - May require admin intervention
+
+### Validation Rules
+
+#### Username
+- Must start with a lowercase letter
+- Can contain lowercase letters, numbers, underscores, and hyphens
+- Length: 3-15 characters
+- Pattern: ^[a-z][a-z0-9_-]{2,15}$
+- Must be unique
+
+#### Display Name
+- Minimum length: 3 characters
+- Must be unique
+- Can contain any printable characters
+
+#### Personal Email
+- Must be a valid email format
+- Must be unique
+- Used for account verification
+
+#### Password
+- Minimum length: 8 characters
+- No maximum length enforced
+- Hashed using bcrypt (10 rounds)
+
+#### SIM Frequency
+- Format: CSMC followed by 3 digits
+- Pattern: ^CSMC\d{3}$
+- Must be unique
+
+### Error Handling
+
+#### Registration Failures
+1. **Validation Errors**
+   - Returns 400 Bad Request
+   - Lists all validation errors
+   - No database changes made
+
+2. **Duplicate Fields**
+   - Returns 409 Conflict
+   - Specifies which field is duplicate
+   - Suggests alternative usernames
+
+3. **System User Creation Failure**
+   - Rolls back user creation
+   - Logs error details
+   - Returns 500 with retry information
+
+4. **Email Service Failures**
+   - Keeps user record
+   - Allows resending verification
+   - Logs email service errors
+
+### Recovery Procedures
+
+1. **Failed at USER_CREATED**
+   - Admin can manually delete user record
+   - User can retry with different credentials
+
+2. **Failed at SYSTEM_USER_CREATED**
+   - Admin can retry system user creation
+   - Admin can clean up partial system user
+
+3. **Failed at VERIFICATION_SENT**
+   - User can request new verification email
+   - Admin can manually verify email
+
+### Security Measures
+
+1. **Rate Limiting**
+   - Max 5 registration attempts per IP per hour
+   - Max 3 verification email requests per user per day
+
+2. **Token Security**
+   - Verification tokens expire after 24 hours
+   - One-time use only
+   - Invalidated on password change
+
+3. **Data Protection**
+   - Passwords hashed before storage
+   - Personal data encrypted at rest
+   - System email generated internally
+
+### Monitoring
+
+#### Key Metrics
+1. **Success Rate**
+   - Registration completion rate
+   - Average time to complete
+   - Failure points distribution
+
+2. **Performance**
+   - Response times per step
+   - Database operation times
+   - Email delivery rates
+
+3. **Security**
+   - Failed attempt patterns
+   - IP-based activity
+   - Token usage statistics
+
+#### Logging
+All registration steps are logged with:
+- Timestamp
+- Request ID
+- IP Address
+- Username
+- Status change
+- Error details (if any)
+
+### Testing
+
+#### Integration Tests
+1. **Happy Path**
+   - Complete registration flow
+   - Email verification
+   - First login
+
+2. **Error Cases**
+   - Duplicate usernames
+   - Invalid inputs
+   - Service failures
+
+3. **Security**
+   - Token tampering
+   - Rate limiting
+   - Input sanitization
+
+### Support Procedures
+
+#### Common Issues
+
+1. **Verification Email Not Received**
+   ```bash
+   # Check email logs
+   tail -f /var/www/preprod.local/auth/logs/email.log
+   
+   # Resend verification email
+   curl -X POST https://auth.preprod.local/api/auth/resend-verification \
+     -H "Content-Type: application/json" \
+     -d '{"username": "user123"}'
    ```
 
-2. **Backend Registration Process**
-   ```javascript
-   async function registerUser(data) {
-       // Start transaction
-       const session = await mongoose.startSession();
-       session.startTransaction();
-       
-       try {
-           // 1. Validate all inputs
-           const validation = await validateRegistration(data);
-           if (!validation.isValid) {
-               throw new ValidationError(validation.errors);
-           }
-           
-           // 2. Create user in MongoDB
-           const user = await User.create({
-               username: data.username,
-               displayName: data.displayName,
-               systemEmail: `${data.username}@local.domain`,
-               personalEmail: data.personalEmail,
-               password: await bcrypt.hash(data.password, 10),
-               simFrequency: data.simFrequency
-           });
-           
-           // 3. Create Linux system user
-           await createSystemUser({
-               username: data.username,
-               email: `${data.username}@local.domain`
-           });
-           
-           // 4. Update user record
-           user.systemUserCreated = true;
-           await user.save();
-           
-           // 5. Generate verification token
-           const verificationToken = generateToken(user);
-           
-           // 6. Send verification email
-           await sendVerificationEmail({
-               to: data.personalEmail,
-               token: verificationToken,
-               username: data.username,
-               displayName: data.displayName
-           });
-           
-           // Commit transaction
-           await session.commitTransaction();
-           
-           return {
-               success: true,
-               user: {
-                   username: user.username,
-                   displayName: user.displayName,
-                   systemEmail: user.systemEmail
-               }
-           };
-           
-       } catch (error) {
-           // Rollback on any error
-           await session.abortTransaction();
-           
-           // Clean up system user if created
-           if (error.systemUserCreated) {
-               await removeSystemUser(data.username);
-           }
-           
-           throw error;
-       }
-   }
+2. **System User Creation Failed**
+   ```bash
+   # Check system integration logs
+   tail -f /var/www/preprod.local/auth/logs/system.log
+   
+   # Retry system user creation
+   curl -X POST https://auth.preprod.local/api/auth/retry-system-user \
+     -H "Authorization: Bearer <admin_token>" \
+     -d '{"username": "user123"}'
    ```
 
-3. **Email Verification Process**
-   ```javascript
-   async function verifyEmail(token) {
-       // 1. Validate token
-       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-       
-       // 2. Update user verification status
-       const user = await User.findByIdAndUpdate(
-           decoded.userId,
-           {
-               isVerified: true,
-               verifiedAt: new Date()
-           },
-           { new: true }
-       );
-       
-       // 3. Send welcome email
-       await sendWelcomeEmail({
-           to: user.systemEmail,
-           displayName: user.displayName
-       });
-       
-       return user;
-   }
+#### Admin Tools
+1. **Status Check**
+   ```bash
+   # Get detailed registration status
+   curl https://auth.preprod.local/api/auth/status/registration/user123
    ```
+
+2. **Manual Verification**
+   ```bash
+   # Verify email manually (admin only)
+   curl -X POST https://auth.preprod.local/api/auth/admin/verify-email \
+     -H "Authorization: Bearer <admin_token>" \
+     -d '{"username": "user123"}'
+   ```
+
+### Cleanup Procedures
+
+#### Failed Registrations
+1. Remove user record if exists
+2. Clean up system user if created
+3. Remove email verification tokens
+4. Clear any cached data
+
+#### Automated Cleanup
+- Failed registrations older than 24 hours
+- Expired verification tokens
+- Unused system users
+
+### Contact Information
+
+#### Technical Support
+- Email: support@preprod.local
+- Internal: ext. 5555
+
+#### Emergency Contacts
+- System Admin: admin@preprod.local
+- Security Team: security@preprod.local
+
+## Backend Registration Process
+
+```javascript
+async function registerUser(data) {
+    // Start transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
+    try {
+        // 1. Validate all inputs
+        const validation = await validateRegistration(data);
+        if (!validation.isValid) {
+            throw new ValidationError(validation.errors);
+        }
+        
+        // 2. Create user in MongoDB
+        const user = await User.create({
+            username: data.username,
+            displayName: data.displayName,
+            systemEmail: `${data.username}@local.domain`,
+            personalEmail: data.personalEmail,
+            password: await bcrypt.hash(data.password, 10),
+            simFrequency: data.simFrequency
+        });
+        
+        // 3. Create Linux system user
+        await createSystemUser({
+            username: data.username,
+            email: `${data.username}@local.domain`
+        });
+        
+        // 4. Update user record
+        user.systemUserCreated = true;
+        await user.save();
+        
+        // 5. Generate verification token
+        const verificationToken = generateToken(user);
+        
+        // 6. Send verification email
+        await sendVerificationEmail({
+            to: data.personalEmail,
+            token: verificationToken,
+            username: data.username,
+            displayName: data.displayName
+        });
+        
+        // Commit transaction
+        await session.commitTransaction();
+        
+        return {
+            success: true,
+            user: {
+                username: user.username,
+                displayName: user.displayName,
+                systemEmail: user.systemEmail
+            }
+        };
+        
+    } catch (error) {
+        // Rollback on any error
+        await session.abortTransaction();
+        
+        // Clean up system user if created
+        if (error.systemUserCreated) {
+            await removeSystemUser(data.username);
+        }
+        
+        throw error;
+    }
+}
+```
+
+## Email Verification Process
+
+```javascript
+async function verifyEmail(token) {
+    // 1. Validate token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // 2. Update user verification status
+    const user = await User.findByIdAndUpdate(
+        decoded.userId,
+        {
+            isVerified: true,
+            verifiedAt: new Date()
+        },
+        { new: true }
+    );
+    
+    // 3. Send welcome email
+    await sendWelcomeEmail({
+        to: user.systemEmail,
+        displayName: user.displayName
+    });
+    
+    return user;
+}
+```
 
 ## Error Handling
 
-1. **Validation Errors**
-   - Invalid username format
-   - Duplicate entries
-   - Invalid email format
-   - Weak password
+### Validation Errors
+- Invalid username format
+- Duplicate entries
+- Invalid email format
+- Weak password
 
-2. **System Errors**
-   - Linux user creation failure
-   - Email sending failure
-   - Database transaction failure
+### System Errors
+- Linux user creation failure
+- Email sending failure
+- Database transaction failure
 
-3. **Recovery Procedures**
-   - Transaction rollback
-   - System user cleanup
-   - Error logging
-   - User notification
+### Recovery Procedures
+- Transaction rollback
+- System user cleanup
+- Error logging
+- User notification
 
 ## Security Considerations
 
-1. **Password Security**
-   - Bcrypt hashing
-   - Minimum strength requirements
-   - No plaintext storage
+### Password Security
+- Bcrypt hashing
+- Minimum strength requirements
+- No plaintext storage
 
-2. **Email Security**
-   - Verification required
-   - Secure token generation
-   - Limited token validity
+### Email Security
+- Verification required
+- Secure token generation
+- Limited token validity
 
-3. **System Security**
-   - Proper Linux permissions
-   - Secure mail directory setup
-   - Protected user home directories
+### System Security
+- Proper Linux permissions
+- Secure mail directory setup
+- Protected user home directories

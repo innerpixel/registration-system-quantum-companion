@@ -1,122 +1,141 @@
-&lt;template>
+<template>
   <div class="users-list">
     <div class="header">
       <h2>System Users</h2>
       <div class="filters">
-        <el-input
-          v-model="searchQuery"
-          placeholder="Search users..."
-          prefix-icon="el-icon-search"
-          clearable
-        />
-        <el-select v-model="statusFilter" placeholder="Status" clearable>
-          <el-option label="All" value="" />
-          <el-option label="Active" value="active" />
-          <el-option label="Pending" value="pending" />
-          <el-option label="Inactive" value="inactive" />
-        </el-select>
+        <div class="search-filter">
+          <BaseInput
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search users..."
+            icon="search-icon"
+          />
+        </div>
+        <div class="status-filter">
+          <BaseSelect
+            v-model="statusFilter"
+            :options="[
+              { value: '', label: 'All' },
+              { value: 'active', label: 'Active' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'inactive', label: 'Inactive' }
+            ]"
+            placeholder="Status"
+            clearable
+          />
+        </div>
       </div>
     </div>
 
-    <el-table
+    <BaseTable
       v-loading="loading"
       :data="filteredUsers"
       style="width: 100%"
       border
     >
-      <el-table-column prop="username" label="Username" sortable>
-        <template #default="{ row }">
-          <div class="user-info">
-            <el-avatar :size="32" :src="getUserAvatar(row.username)" />
-            <span>{{ row.username }}</span>
-          </div>
-        </template>
-      </el-table-column>
+      <template #username="{ row }">
+        <div class="user-info">
+          <img :src="getUserAvatar(row.username)" class="user-avatar" alt="User avatar" />
+          <span>{{ row.username }}</span>
+        </div>
+      </template>
       
-      <el-table-column prop="status" label="Status" width="120">
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
+      <template #status="{ row }">
+        <BaseTag :type="getStatusType(row.status)">
+          {{ row.status }}
+        </BaseTag>
+      </template>
 
-      <el-table-column prop="lastLogin" label="Last Login" sortable>
-        <template #default="{ row }">
-          {{ formatDate(row.lastLogin) }}
-        </template>
-      </el-table-column>
+      <template #lastLogin="{ row }">
+        {{ formatDate(row.lastLogin) }}
+      </template>
 
-      <el-table-column prop="homeDir" label="Home Directory" />
+      <template #homeDir="{ row }">
+        {{ row.homeDir }}
+      </template>
 
-      <el-table-column label="Actions" width="200" fixed="right">
-        <template #default="{ row }">
-          <el-button-group>
-            <el-button
-              size="small"
-              type="primary"
-              @click="viewUserDetails(row)"
-              icon="el-icon-view"
-            >
-              View
-            </el-button>
-            <el-button
-              size="small"
-              type="danger"
-              :disabled="!canRemoveUser(row)"
-              @click="confirmRemoveUser(row)"
-              icon="el-icon-delete"
-            >
-              Remove
-            </el-button>
-          </el-button-group>
-        </template>
-      </el-table-column>
-    </el-table>
+      <template #actions="{ row }">
+        <div class="action-buttons">
+          <BaseButton
+            icon="view-icon"
+            type="primary"
+            size="small"
+            @click="viewUserDetails(row)"
+          >
+            View
+          </BaseButton>
+          <BaseButton
+            icon="delete-icon"
+            type="danger"
+            size="small"
+            :disabled="!canRemoveUser(row)"
+            @click="confirmRemoveUser(row)"
+          >
+            Remove
+          </BaseButton>
+        </div>
+      </template>
+    </BaseTable>
 
     <!-- User Details Dialog -->
-    <el-dialog
+    <BaseDialog
       v-model="detailsDialog.visible"
       :title="'User Details: ' + (detailsDialog.user?.username || '')"
       width="600px"
     >
       <div v-if="detailsDialog.user" class="user-details">
-        <el-descriptions border>
-          <el-descriptions-item label="Username">
-            {{ detailsDialog.user.username }}
-          </el-descriptions-item>
-          <el-descriptions-item label="Status">
-            <el-tag :type="getStatusType(detailsDialog.user.status)">
-              {{ detailsDialog.user.status }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="Home Directory">
-            {{ detailsDialog.user.homeDir }}
-          </el-descriptions-item>
-          <el-descriptions-item label="Mail Directory">
-            {{ detailsDialog.user.mailDir }}
-          </el-descriptions-item>
-          <el-descriptions-item label="Last Login">
-            {{ formatDate(detailsDialog.user.lastLogin) }}
-          </el-descriptions-item>
-          <el-descriptions-item label="System Info">
-            {{ detailsDialog.user.userInfo }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <div class="detail-row">
+          <span class="detail-label">Username:</span>
+          <span class="detail-value">{{ detailsDialog.user.username }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status:</span>
+          <BaseTag :type="getStatusType(detailsDialog.user.status)">
+            {{ detailsDialog.user.status }}
+          </BaseTag>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Home Directory:</span>
+          <span class="detail-value">{{ detailsDialog.user.homeDir }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Mail Directory:</span>
+          <span class="detail-value">{{ detailsDialog.user.mailDir }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Last Login:</span>
+          <span class="detail-value">{{ formatDate(detailsDialog.user.lastLogin) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">System Info:</span>
+          <span class="detail-value">{{ detailsDialog.user.systemInfo }}</span>
+        </div>
       </div>
-    </el-dialog>
+    </BaseDialog>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
 import axios from 'axios';
 import { format } from 'date-fns';
+import BaseInput from './ui/BaseInput.vue';
+import BaseSelect from './ui/BaseSelect.vue';
+import BaseTable from './ui/BaseTable.vue';
+import BaseButton from './ui/BaseButton.vue';
+import BaseTag from './ui/BaseTag.vue';
+import BaseDialog from './ui/BaseDialog.vue';
 
 export default {
   name: 'UsersList',
-  
+  components: {
+    BaseInput,
+    BaseSelect,
+    BaseTable,
+    BaseButton,
+    BaseTag,
+    BaseDialog
+  },
   setup() {
     const users = ref([]);
     const loading = ref(false);
@@ -146,7 +165,6 @@ export default {
           status: determineUserStatus(user)
         }));
       } catch (error) {
-        ElMessage.error('Failed to fetch users');
         console.error('Error fetching users:', error);
       } finally {
         loading.value = false;
@@ -196,27 +214,18 @@ export default {
     };
 
     const confirmRemoveUser = (user) => {
-      ElMessageBox.confirm(
-        `Are you sure you want to remove user ${user.username}? This action cannot be undone.`,
-        'Warning',
-        {
-          confirmButtonText: 'Remove',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }
-      ).then(() => {
+      if (confirm(`Are you sure you want to remove user ${user.username}? This action cannot be undone.`)) {
         removeUser(user);
-      }).catch(() => {});
+      }
     };
 
     const removeUser = async (user) => {
       try {
         loading.value = true;
         await axios.delete(`/api/users/system/${user.username}`);
-        ElMessage.success(`User ${user.username} removed successfully`);
+        console.log(`User ${user.username} removed successfully`);
         await fetchUsers();
       } catch (error) {
-        ElMessage.error('Failed to remove user');
         console.error('Error removing user:', error);
       } finally {
         loading.value = false;
@@ -272,11 +281,31 @@ export default {
   margin-top: 20px;
 }
 
-:deep(.el-table) {
-  margin-top: 20px;
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-:deep(.el-avatar) {
-  background-color: #f0f2f5;
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #606266;
+  width: 120px;
+}
+
+.detail-value {
+  color: #303133;
 }
 </style>
