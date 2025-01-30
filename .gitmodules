@@ -1,0 +1,3 @@
+[submodule "frontend/cosmic-companion-ai"]
+	path = frontend/cosmic-companion-ai
+	url = git@github.com:innerpixel/cosmic-companion-ai.git
