@@ -37,12 +37,14 @@
      - Must contain mix of characters
      - Stored with bcrypt hashing
 
-5. **SIM (phone number) Interplanetary Emergency Frequency ;)**
+5. **Phone Number**
    - Purpose: Future emergency protocols
    - Example: `+1234567890`
    - Requirements:
+     - International format (e.g., +1234567890)
+     - Pattern: ^\+[0-9]{1,15}$
      - Must be unique
-     - Format validation (TBD) ?!? what is dit ?!?
+     - No verification required at this stage
 
 ## Validation Process
 
@@ -61,9 +63,9 @@ async function validateRegistration(data) {
     const displayNameExists = await checkDisplayName(data.displayName);
     const isValidDisplayName = data.displayName.length >= 3;
 
-    // 4. SIM Emergency frequency = phone validation but we can ask it ..  
-    We can better integrate the phone validation during the web3 integration, kyc and other complyances  
-    
+    // 4. Phone Number Validation
+    const phoneNumberExists = await checkPhoneNumber(data.phoneNumber);
+    const isValidPhoneNumber = /^\+[0-9]{1,15}$/.test(data.phoneNumber);
 
     // All validations must pass
     return {
@@ -71,17 +73,17 @@ async function validateRegistration(data) {
                 !emailExists && 
                 !personalEmailExists && 
                 !displayNameExists &&
-                !simFrequencyExists &&
+                !phoneNumberExists &&
                 isValidUsername &&
                 isValidEmail &&
                 isValidDisplayName &&
-                isValidSimFrequency,
+                isValidPhoneNumber,
         errors: {
             username: systemUserExists ? 'Username already taken' : null,
             email: emailExists ? 'Email already registered' : null,
             personalEmail: personalEmailExists ? 'Personal email already registered' : null,
             displayName: displayNameExists ? 'Display name already taken' : null,
-            simFrequency: simFrequencyExists ? 'SIM frequency already assigned' : null
+            phoneNumber: phoneNumberExists ? 'Phone number already assigned' : null
         }
     };
 }
@@ -130,11 +132,11 @@ const UserSchema = {
     },
     
     // Emergency Info
-    simFrequency: {
+    phoneNumber: {
         type: String,
         required: true,
         unique: true,
-        match: '+1234567890' 
+        match: /^\+[0-9]{1,15}$/
     },
     
     // Status Flags
@@ -163,47 +165,104 @@ const UserSchema = {
 The registration process is designed to be secure and reliable, with proper validation at each step and clear error handling. The process includes username validation, system user creation, email verification, and status tracking.
 
 ### Registration States
-Each registration attempt goes through several states, tracked in the `registrationStatus` field:
+
+The registration process follows a strict state machine pattern:
+
+### States
 
 1. `INITIATED`
-   - Initial state when registration request is received
-   - Validates all input fields
-   - Checks username and email availability
+   - Initial state when form is submitted
+   - Basic validation starts
+   - Form data collected
 
 2. `USERNAME_VALIDATED`
    - Username format validated
    - Username availability confirmed
-   - No existing user with same email or SIM frequency
+   - Email and phone number uniqueness verified
 
 3. `USER_CREATED`
-   - User record created in MongoDB
-   - Password hashed and stored
-   - Initial profile data saved
+   - Auth user record created
+   - Temporary token generated
+   - Basic profile established
 
 4. `SYSTEM_USER_CREATED`
-   - System user account created
-   - System email assigned (`username@local.domain`)
-   - Integration with system services completed
+   - Linux system user created
+   - System email account prepared
+   - Base directories created
 
 5. `MAIL_CONFIGURED`
-   - Email settings configured
-   - Verification token generated
-   - Token expiration set (24 hours)
+   - Mail directories configured
+   - System email setup completed
+   - Mail forwarding rules established
 
 6. `VERIFICATION_SENT`
    - Verification email sent to personal email
-   - Contains verification link with token
+   - Token generated and stored
    - User notified to check email
 
 7. `VERIFIED`
    - Email verification completed
-   - Account fully activated
-   - User can now log in
+   - System setup finalized
+   - User can now access system
 
 8. `FAILED`
-   - Registration process failed
-   - Contains error details and last successful step
-   - May require admin intervention
+   - Error state for any step
+   - Contains error details
+   - Allows retry from last successful state
+
+### State Transitions
+
+```mermaid
+graph TD
+    A[INITIATED] --> B[USERNAME_VALIDATED]
+    B --> C[USER_CREATED]
+    C --> D[SYSTEM_USER_CREATED]
+    D --> E[MAIL_CONFIGURED]
+    E --> F[VERIFICATION_SENT]
+    F --> G[VERIFIED]
+    A --> H[FAILED]
+    B --> H
+    C --> H
+    D --> H
+    E --> H
+    F --> H
+    H --> A
+```
+
+### Error Handling
+
+Each state transition includes comprehensive error handling:
+
+1. **Validation Errors**
+   - Username format/availability
+   - Email format/uniqueness
+   - Phone number format/uniqueness
+   - Password requirements
+
+2. **System Setup Errors**
+   - User creation failures
+   - Mail configuration issues
+   - Directory setup problems
+   - Permission errors
+
+3. **Verification Errors**
+   - Email sending failures
+   - Invalid/expired tokens
+   - System completion errors
+
+### Recovery Procedures
+
+The system supports recovery from failures:
+
+1. **Automatic Retry**
+   - Tracks last successful state
+   - Can resume from last good state
+   - Preserves user data
+
+2. **Manual Intervention**
+   - Admin interface for stuck registrations
+   - Tools for system cleanup
+   - User notification system
 
 ### Validation Rules
 
@@ -229,10 +288,11 @@ Each registration attempt goes through several states, tracked in the `registrat
 - No maximum length enforced
 - Hashed using bcrypt (10 rounds)
 
-#### SIM Frequency
-- Format: CSMC followed by 3 digits
-- Pattern: ^CSMC\d{3}$
+#### Phone Number
+- International format (e.g., +1234567890)
+- Pattern: ^\+[0-9]{1,15}$
 - Must be unique
+- No verification required at this stage
 
 ### Error Handling
 
@@ -418,7 +478,7 @@ async function registerUser(data) {
             systemEmail: `${data.username}@local.domain`,
             personalEmail: data.personalEmail,
             password: await bcrypt.hash(data.password, 10),
-            simFrequency: data.simFrequency
+            phoneNumber: data.phoneNumber
         });
         
         // 3. Create Linux system user

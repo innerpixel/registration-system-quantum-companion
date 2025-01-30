@@ -33,8 +33,32 @@
             :disabled="loading"
           />
         </div>
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <BaseInput
+            id="phoneNumber"
+            v-model="form.phoneNumber"
+            type="tel"
+            placeholder="+1234567890"
+            :disabled="loading"
+          />
+          <small class="input-help">Format: +1234567890</small>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <BaseInput
+            id="email"
+            v-model="form.email"
+            type="email"
+            placeholder="your@email.com"
+            :disabled="loading"
+          />
+        </div>
         <div class="error-message" v-if="error">
           {{ error }}
+        </div>
+        <div class="state-message" v-if="stateMessage">
+          {{ stateMessage }}
         </div>
         <BaseButton
           type="primary"
@@ -54,7 +78,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useRegistrationStore, REGISTRATION_STATES } from '@/stores/registration'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
@@ -66,46 +90,104 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const registrationStore = useRegistrationStore()
     
     const form = ref({
       username: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      phoneNumber: '',
+      email: ''
     })
     const loading = ref(false)
-    const error = ref('')
 
     const isFormValid = computed(() => {
+      const phoneNumberPattern = /^\+[0-9]{1,15}$/
       return form.value.username &&
         form.value.password &&
-        form.value.password === form.value.confirmPassword
+        form.value.password === form.value.confirmPassword &&
+        phoneNumberPattern.test(form.value.phoneNumber) &&
+        form.value.email
     })
 
     const handleRegistration = async () => {
       if (loading.value || !isFormValid.value) return
 
       loading.value = true
-      error.value = ''
-
       try {
-        await axios.post('/api/auth/register', {
+        // Start registration process
+        await registrationStore.initRegistration({
           username: form.value.username,
-          password: form.value.password
+          password: form.value.password,
+          phoneNumber: form.value.phoneNumber,
+          email: form.value.email
         })
-        router.push('/login')
+
+        // If validation passes, create user
+        if (registrationStore.currentState === REGISTRATION_STATES.USERNAME_VALIDATED) {
+          await registrationStore.createUser()
+        }
+
+        // If user created, set up system user
+        if (registrationStore.currentState === REGISTRATION_STATES.USER_CREATED) {
+          await registrationStore.createSystemUser()
+        }
+
+        // If system user created, configure mail
+        if (registrationStore.currentState === REGISTRATION_STATES.SYSTEM_USER_CREATED) {
+          await registrationStore.configureMail()
+        }
+
+        // If mail configured, send verification
+        if (registrationStore.currentState === REGISTRATION_STATES.MAIL_CONFIGURED) {
+          await registrationStore.sendVerification()
+        }
+
+        // If verification sent, redirect to verification page
+        if (registrationStore.currentState === REGISTRATION_STATES.VERIFICATION_SENT) {
+          router.push({
+            name: 'verify-email',
+            query: { email: form.value.email }
+          })
+        }
       } catch (err) {
-        error.value = err.response?.data?.message || 'Registration failed. Please try again.'
+        // Error handling is managed by the store
+        console.error('Registration error:', err)
       } finally {
         loading.value = false
       }
     }
 
+    // Computed properties for UI feedback
+    const stateMessage = computed(() => {
+      switch (registrationStore.currentState) {
+        case REGISTRATION_STATES.INITIATED:
+          return 'Validating your information...'
+        case REGISTRATION_STATES.USERNAME_VALIDATED:
+          return 'Creating your account...'
+        case REGISTRATION_STATES.USER_CREATED:
+          return 'Setting up your system access...'
+        case REGISTRATION_STATES.SYSTEM_USER_CREATED:
+          return 'Configuring your mail settings...'
+        case REGISTRATION_STATES.MAIL_CONFIGURED:
+          return 'Sending verification email...'
+        case REGISTRATION_STATES.VERIFICATION_SENT:
+          return 'Please check your email to verify your account.'
+        case REGISTRATION_STATES.FAILED:
+          return registrationStore.error || 'Registration failed. Please try again.'
+        default:
+          return ''
+      }
+    })
+
     return {
       form,
       loading,
-      error,
       isFormValid,
-      handleRegistration
+      handleRegistration,
+      stateMessage,
+      error: computed(() => registrationStore.error),
+      validationErrors: computed(() => registrationStore.validationErrors)
     }
   }
 }
@@ -113,65 +195,69 @@ export default {
 
 <style scoped>
 .registration-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: #f5f7fa;
+  align-items: center;
+  min-height: 100vh;
   padding: 20px;
+  background-color: #f5f5f5;
 }
 
 .registration-card {
   background: white;
-  padding: 32px;
+  padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
-}
-
-.registration-card h1 {
-  margin: 0 0 24px 0;
-  text-align: center;
-  color: #2c3e50;
 }
 
 .registration-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-.form-group label {
-  font-size: 14px;
-  color: #606266;
+.input-help {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+label {
+  font-weight: 500;
+  color: #333;
 }
 
 .error-message {
-  color: #f56c6c;
-  font-size: 14px;
-  text-align: center;
+  color: #dc3545;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.state-message {
+  color: #666;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .register-button {
-  width: 100%;
+  margin-top: 1rem;
 }
 
 .registration-footer {
-  margin-top: 24px;
+  margin-top: 1rem;
   text-align: center;
 }
 
 .registration-footer a {
-  color: #409eff;
+  color: #007bff;
   text-decoration: none;
-  font-size: 14px;
 }
 
 .registration-footer a:hover {
