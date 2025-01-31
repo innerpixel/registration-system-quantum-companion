@@ -181,7 +181,7 @@ Best of luck on your quantum journey!
 
 Don't worry, Explorer!
 
-We've detected a quantum anomaly in your registration 
+We have detected a quantum anomaly in your registration 
 process. Our Quantum Engineers are working to 
 stabilize your reality.
 

@@ -4,7 +4,7 @@
       <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <img src="@/assets/logo.svg" alt="Logo" class="h-8 w-8" />
-          <span class="text-xl font-semibold">Cosmic User Management</span>
+          <span class="text-xl font-semibold">csmcl.space </span>
         </div>
         <NavMenu :items="menuItems" />
         <div v-if="authStore.isAuthenticated" class="relative">

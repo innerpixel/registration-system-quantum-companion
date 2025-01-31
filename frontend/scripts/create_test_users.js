@@ -23,8 +23,7 @@ const userService = {
         displayName: userData.displayName,
         personalEmail: userData.personalEmail,
         systemEmail: userData.systemEmail,
-        password: userData.password,
-        simFrequency: userData.simFrequency
+        password: userData.password
       });
 
       // Step 2: Create system user and setup mail
@@ -33,7 +32,6 @@ const userService = {
         displayName: userData.displayName,
         personalEmail: userData.personalEmail,
         systemEmail: userData.systemEmail,
-        simFrequency: userData.simFrequency,
         token: authResponse.data.token
       });
 
@@ -71,24 +69,21 @@ const TEST_USERS = [
     displayName: 'Cosmic Explorer John',
     personalEmail: 'test_john_2cr45@local.domain',
     systemEmail: 'test_john_2cr45@cosmical.space',
-    password: 'CosmicPass123!',
-    simFrequency: 'CSMC001'
+    password: 'CosmicPass123!'
   },
   {
     name: 'test_marie_2cr45',
     displayName: 'Star Voyager Marie',
     personalEmail: 'test_marie_2cr45@local.domain',
     systemEmail: 'test_marie_2cr45@cosmical.space',
-    password: 'VoyagerPass123!',
-    simFrequency: 'CSMC002'
+    password: 'VoyagerPass123!'
   },
   {
     name: 'test_eduardo_2cr45',
     displayName: 'Nebula Seeker Eduardo',
     personalEmail: 'test_eduardo_2cr45@local.domain',
     systemEmail: 'test_eduardo_2cr45@cosmical.space',
-    password: 'NebulaPass123!',
-    simFrequency: 'CSMC003'
+    password: 'NebulaPass123!'
   }
 ];
 
@@ -99,20 +94,13 @@ async function createTestUsers() {
       
       // Start registration process
       const registration = await userService.register(userData);
-      console.log(`- User registered: ${userData.name}`);
-      
-      // Simulate immediate verification (since these are test users)
-      const verificationToken = registration.verificationToken;
-      await userService.verifyEmail(verificationToken);
-      console.log(`- Email verified for: ${userData.name}`);
-      
-      // Check system status
-      const systemStatus = await userService.getSystemStatus(userData.name);
-      console.log(`- System status for ${userData.name}:`, systemStatus);
-      
-      console.log(`✅ Successfully created test user: ${userData.displayName}\n`);
+      console.log(`User registered:`, registration);
+
+      // Wait for a bit to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
     } catch (error) {
-      console.error(`❌ Failed to create test user ${userData.displayName}:`, error);
+      console.error(`Failed to create user ${userData.displayName}:`, error);
     }
   }
 }

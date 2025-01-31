@@ -39,21 +39,10 @@ export const useRegistrationStore = defineStore('registration', {
       this.validationErrors = {}
 
       try {
-        // Validate username and email availability
-        const validationResult = await userService.validateRegistration({
-          username: formData.username,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber
-        })
-
-        if (validationResult.isValid) {
-          this.currentState = REGISTRATION_STATES.USERNAME_VALIDATED
-          this.lastSuccessfulState = REGISTRATION_STATES.USERNAME_VALIDATED
-        } else {
-          this.validationErrors = validationResult.errors
-          this.currentState = REGISTRATION_STATES.FAILED
-          throw new Error('Validation failed')
-        }
+        // Move directly to user creation since validation happens during registration
+        this.currentState = REGISTRATION_STATES.USERNAME_VALIDATED
+        this.lastSuccessfulState = REGISTRATION_STATES.USERNAME_VALIDATED
+        await this.createUser()
       } catch (error) {
         this.handleError(error)
       }

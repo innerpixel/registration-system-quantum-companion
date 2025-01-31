@@ -3,6 +3,7 @@
     <input
       :type="type"
       :value="modelValue"
+      :id="id"
       @input="$emit('update:modelValue', $event.target.value)"
       v-bind="$attrs"
       class="input-field"
@@ -28,6 +29,10 @@ export default {
     icon: {
       type: String,
       default: ''
+    },
+    id: {
+      type: String,
+      required: true
     }
   },
   emits: ['update:modelValue']
@@ -49,26 +54,23 @@ export default {
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   transition: border-color 0.2s;
+  outline: none;
 }
 
 .input-field:focus {
-  outline: none;
   border-color: #409eff;
 }
 
-.input-field:hover {
-  border-color: #c0c4cc;
+.input-field:disabled {
+  background-color: #f5f7fa;
+  cursor: not-allowed;
 }
 
 .input-icon {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 12px;
   transform: translateY(-50%);
   color: #c0c4cc;
-}
-
-.input-field[type="search"] {
-  padding-right: 30px;
 }
 </style>

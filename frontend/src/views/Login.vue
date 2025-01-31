@@ -1,50 +1,58 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1>Login</h1>
-      <form @submit.prevent="handleLogin" class="login-form">
+      <h1>CSMCL Login</h1>
+      <form @submit.prevent="handleSubmit" class="login-form">
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="login-username">CSMCL Designation</label>
           <BaseInput
-            id="username"
+            id="login-username"
             v-model="form.username"
             type="text"
-            placeholder="Enter your username"
-            :disabled="loading"
+            :class="{ 'error': errors.username }"
+            placeholder="Enter your CSMCL designation"
           />
+          <small class="error-text" v-if="errors.username">{{ errors.username }}</small>
         </div>
+
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="login-password">CSMCL Security Code</label>
           <BaseInput
-            id="password"
+            id="login-password"
             v-model="form.password"
             type="password"
-            placeholder="Enter your password"
-            :disabled="loading"
+            :class="{ 'error': errors.password }"
+            placeholder="Enter your security code"
           />
+          <small class="error-text" v-if="errors.password">{{ errors.password }}</small>
         </div>
-        <div class="error-message" v-if="error">
-          {{ error }}
+
+        <div v-if="globalError" class="global-error">
+          {{ globalError }}
         </div>
+
         <BaseButton
           type="primary"
-          :disabled="loading"
-          class="login-button"
+          :disabled="isSubmitting || !isFormValid"
+          :loading="isSubmitting"
+          @click="handleSubmit"
         >
-          {{ loading ? 'Logging in...' : 'Login' }}
+          {{ isSubmitting ? 'Logging in...' : 'Login' }}
         </BaseButton>
+        <button type="submit" style="display: none"></button>
       </form>
+
       <div class="login-footer">
-        <router-link to="/registration">Don't have an account? Register</router-link>
+        <router-link to="/register">Need a CSMCL account? Register</router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { authService } from '@/services/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
@@ -56,36 +64,67 @@ export default {
   },
   setup() {
     const router = useRouter()
-    const authStore = useAuthStore()
-    
     const form = ref({
       username: '',
       password: ''
     })
-    const loading = ref(false)
-    const error = ref('')
+    const errors = ref({})
+    const globalError = ref('')
+    const isSubmitting = ref(false)
 
-    const handleLogin = async () => {
-      if (loading.value) return
+    const validateForm = () => {
+      const newErrors = {}
+      
+      if (!form.value.username) {
+        newErrors.username = 'Username is required'
+      }
 
-      loading.value = true
-      error.value = ''
+      if (!form.value.password) {
+        newErrors.password = 'Password is required'
+      }
+
+      errors.value = newErrors
+      return Object.keys(newErrors).length === 0
+    }
+
+    const isFormValid = computed(() => {
+      return form.value.username && form.value.password
+    })
+
+    const handleSubmit = async () => {
+      if (!validateForm()) return
+
+      isSubmitting.value = true
+      globalError.value = ''
+      errors.value = {}
 
       try {
-        await authStore.login(form.value)
-        router.push('/dashboard')
-      } catch (err) {
-        error.value = err.response?.data?.message || 'Login failed. Please try again.'
+        const response = await authService.login({
+          username: form.value.username,
+          password: form.value.password
+        })
+
+        if (response.success) {
+          // Store the token
+          localStorage.setItem('auth_token', response.token)
+          
+          // Redirect to dashboard or home
+          router.push({ name: 'dashboard' })
+        }
+      } catch (error) {
+        globalError.value = error.message || 'Login failed. Please check your credentials and try again.'
       } finally {
-        loading.value = false
+        isSubmitting.value = false
       }
     }
 
     return {
       form,
-      loading,
-      error,
-      handleLogin
+      errors,
+      globalError,
+      isSubmitting,
+      isFormValid,
+      handleSubmit
     }
   }
 }
@@ -93,65 +132,62 @@ export default {
 
 <style scoped>
 .login-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: #f5f7fa;
-  padding: 20px;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f5f5f5;
 }
 
 .login-card {
   background: white;
-  padding: 32px;
+  padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
-}
-
-.login-card h1 {
-  margin: 0 0 24px 0;
-  text-align: center;
-  color: #2c3e50;
+  max-width: 480px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-.form-group label {
-  font-size: 14px;
-  color: #606266;
+label {
+  font-weight: 600;
+  color: #333;
 }
 
-.error-message {
-  color: #f56c6c;
-  font-size: 14px;
-  text-align: center;
+.error-text {
+  color: #dc3545;
+  font-size: 0.875rem;
 }
 
-.login-button {
-  width: 100%;
+.global-error {
+  padding: 1rem;
+  background-color: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 4px;
+  color: #c53030;
+  margin-bottom: 1rem;
 }
 
 .login-footer {
-  margin-top: 24px;
+  margin-top: 2rem;
   text-align: center;
 }
 
 .login-footer a {
-  color: #409eff;
+  color: #2563eb;
   text-decoration: none;
-  font-size: 14px;
 }
 
 .login-footer a:hover {
