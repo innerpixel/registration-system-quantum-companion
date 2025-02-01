@@ -51,21 +51,16 @@
     </div>
 
     <!-- Companion Integration -->
-    <TravellerCompanion
-      class="companion-content w-full flex flex-col items-stretch"
-      :initialMessage="'Welcome, Quantum Explorer! How may I assist you today?'"
-      @response="handleCompanionResponse"
-    />
+   
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { TravellerCompanion, useTourStore, useQuantumNexusStore } from 'cosmic-companion-ai'
+import { useQuantumNexusStore } from '../stores/quantum'
 
 // Initialize stores
-const tourStore = useTourStore()
 const quantumStore = useQuantumNexusStore()
 const { nexusStats } = storeToRefs(quantumStore)
 const { formatMetric } = quantumStore
@@ -96,10 +91,6 @@ const systemHealth = computed(() => {
   }
 })
 
-// Methods
-const handleCompanionResponse = (response) => {
-  console.log('Companion response:', response)
-}
 
 const executeCommand = (command) => {
   console.log('Executing command:', command)

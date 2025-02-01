@@ -5,11 +5,11 @@ import { useRegistrationStore, REGISTRATION_STATES } from '../stores/registratio
 const registrationStore = useRegistrationStore()
 
 const formData = ref({
-  name: '',
-  displayName: '',
-  email: '',
-  password: '',
-  simNumber: ''
+  cosmicl_you_username: '',
+  designation_fullname: '',
+  verification_email: '',
+  authentication_phrase: '',
+  verification_phonenumber: ''
 })
 
 const isSubmitting = ref(false)
@@ -35,16 +35,16 @@ const handleSubmit = async () => {
     isSubmitting.value = true
     
     // Create the system email from the username
-    const systemEmail = `${formData.value.name}@local.domain`
+    const systemEmail = `${formData.value.cosmicl_you_username}@local.domain`
     
     // Initialize registration process
     await registrationStore.initRegistration({
-      username: formData.value.name,
-      displayName: formData.value.displayName,
-      email: formData.value.email,
+      username: formData.value.cosmicl_you_username,
+      displayName: formData.value.designation_fullname,
+      email: formData.value.verification_email,
       systemEmail,
-      password: formData.value.password,
-      phoneNumber: formData.value.simNumber
+      password: formData.value.authentication_phrase,
+      phoneNumber: formData.value.verification_phonenumber
     })
 
     // If validation passes, create user
@@ -96,64 +96,74 @@ onUnmounted(() => {
   <div class="max-w-md w-full mx-auto p-6">
     <!-- Registration Form -->
     <form v-if="currentStep === 'registration'" @submit.prevent="handleSubmit" class="space-y-4">
-      <div>
+      <div class="space-y-1">
+        <label class="block text-sm text-white/70">CSMCL Username</label>
         <input
-          v-model="formData.name"
+          v-model="formData.cosmicl_you_username"
           type="text"
-          placeholder="Name"
+          placeholder="Enter your unique CSMCL username"
           required
           class="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-sm 
                  placeholder:text-white/40 focus:outline-none focus:border-white/40
                  hover:bg-white/10 transition-colors"
         />
+        <p class="text-xs text-white/50">This will be your unique identifier in the CSMCL system</p>
       </div>
       
-      <div>
+      <div class="space-y-1">
+        <label class="block text-sm text-white/70">Full Name Designation</label>
         <input
-          v-model="formData.displayName"
+          v-model="formData.designation_fullname"
           type="text"
-          placeholder="Display Name"
+          placeholder="Enter your full legal name"
           required
           class="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-sm 
                  placeholder:text-white/40 focus:outline-none focus:border-white/40
                  hover:bg-white/10 transition-colors"
         />
+        <p class="text-xs text-white/50">Your official designation name for the system</p>
       </div>
 
-      <div>
+      <div class="space-y-1">
+        <label class="block text-sm text-white/70">Verification Email</label>
         <input
-          v-model="formData.email"
+          v-model="formData.verification_email"
           type="email"
-          placeholder="Email"
+          placeholder="Enter your contact email"
           required
           class="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-sm 
                  placeholder:text-white/40 focus:outline-none focus:border-white/40
                  hover:bg-white/10 transition-colors"
         />
+        <p class="text-xs text-white/50">Used for account verification and important notifications</p>
       </div>
 
-      <div>
+      <div class="space-y-1">
+        <label class="block text-sm text-white/70">Authentication Phrase</label>
         <input
-          v-model="formData.password"
+          v-model="formData.authentication_phrase"
           type="password"
-          placeholder="Password"
+          placeholder="Create your secure authentication phrase"
           required
           class="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-sm 
                  placeholder:text-white/40 focus:outline-none focus:border-white/40
                  hover:bg-white/10 transition-colors"
         />
+        <p class="text-xs text-white/50">Your secure passphrase for accessing the system</p>
       </div>
 
-      <div>
+      <div class="space-y-1">
+        <label class="block text-sm text-white/70">Contact Number</label>
         <input
-          v-model="formData.simNumber"
-          type="text"
-          placeholder="SIM Number"
+          v-model="formData.verification_phonenumber"
+          type="tel"
+          placeholder="Enter your contact number"
           required
           class="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-sm 
                  placeholder:text-white/40 focus:outline-none focus:border-white/40
                  hover:bg-white/10 transition-colors"
         />
+        <p class="text-xs text-white/50">Secondary verification and emergency contact</p>
       </div>
 
       <button
