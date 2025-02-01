@@ -24,6 +24,9 @@
     <main class="container mx-auto px-4 py-8">
       <router-view></router-view>
     </main>
+    <div class="relative">
+      <CosmicCompanion />
+    </div>
   </div>
 </template>
 
@@ -32,6 +35,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import NavMenu from '@/components/NavMenu.vue'
+import CosmicCompanion from '@/components/CosmicCompanion.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
