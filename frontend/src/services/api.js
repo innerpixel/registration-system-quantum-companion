@@ -158,115 +158,54 @@ authApi.interceptors.response.use(
   }
 )
 
-export const userService = {
-  // Initial registration
-  async register({ name, displayName, email, password, phoneNumber }) {
+export const authService = {
+  // Register a new user
+  async register({ cosmicl_you_username, designation_fullname, verification_email, authentication_phrase, verification_phonenumber }) {
     try {
-      console.log('Registering user:', {
-        name,
-        displayName,
-        email,
-        phoneNumber
+      const response = await authApi.post('/register', {
+        username: cosmicl_you_username,
+        fullName: designation_fullname,
+        email: verification_email,
+        password: authentication_phrase,
+        phoneNumber: verification_phonenumber
       })
-      // Step 1: Register user with auth service
-      const authResponse = await authApi.post('/register', { 
-        username: name,
-        displayName,
-        personalEmail: email,
-        password,
-        phoneNumber
-      })
-
-      if (authResponse.data.success) {
-        // Step 2: Create system user and setup mail
-        const systemResponse = await api.post('/users/system-setup', {
-          username: name,
-          displayName,
-          email: authResponse.data.data.systemEmail,
-          phoneNumber,
-          token: authResponse.data.token
-        })
-
-        return {
-          ...authResponse.data.data,
-          systemSetup: systemResponse.data
-        }
-      } else {
-        throw new Error(authResponse.data.message || 'Registration failed')
-      }
+      return response.data
     } catch (error) {
-      console.error('Registration error:', error)
-      throw error.response?.data || error.message
+      throw error
+    }
+  },
+
+  // Login user
+  async login({ username, password }) {
+    try {
+      const response = await authApi.post('/login', { username, password })
+      return response.data
+    } catch (error) {
+      throw error
     }
   },
 
   // Verify email
   async verifyEmail(token) {
     try {
-      const verifyResponse = await authApi.post('/verify-email', { token }) 
-      // Step 2: Complete system setup if verification successful
-      if (verifyResponse.data.verified) {
-        await api.post('/users/complete-setup', {
-          token: verifyResponse.data.token
-        })
-      }
-
-      return verifyResponse.data
+      const response = await authApi.post('/verify-email', { token })
+      return response.data
     } catch (error) {
-      console.error('Verification error:', error)
-      throw error.response?.data || error.message
-    }
-  },
-
-  // Get user system status
-  async getSystemStatus(username) {
-    try {
-      const response = await api.get(`/users/${username}/system-status`)
-      return {
-        ...response.data,
-        ready: response.data.systemUserCreated && 
-               response.data.mailConfigured && 
-               response.data.verified
-      }
-    } catch (error) {
-      console.error('System status error:', error)
-      throw error.response?.data || error.message
+      throw error
     }
   }
 }
 
-export const authService = {
-  async register({ username, displayName, verificationEmail, password, phoneNumber }) {
+export const userService = {
+  // Initial registration
+  async register({ cosmicl_you_username, designation_fullname, verification_email, authentication_phrase, verification_phonenumber }) {
     try {
-      console.log('Registering user:', {
-        username,
-        displayName,
-        personalEmail: verificationEmail,
-        phoneNumber,
-        emailAccount: `${username}@ld-csmlmail.test`
-      })
-
-      const response = await authApi.post('/register', {
-        username,
-        displayName,
-        personalEmail: verificationEmail,
-        password,
-        phoneNumber,
-        emailAccount: `${username}@ld-csmlmail.test`
-      })
-
-      return response.data
-    } catch (error) {
-      console.error('Registration error:', error)
-      throw error
-    }
-  },
-
-  async login({ username, password }) {
-    try {
-      const response = await authApi.post('/login', {
-        username,
-        password
+      const response = await api.post('/users/register', {
+        username: cosmicl_you_username,
+        fullName: designation_fullname,
+        email: verification_email,
+        password: authentication_phrase,
+        phoneNumber: verification_phonenumber
       })
       return response.data
     } catch (error) {
@@ -274,9 +213,52 @@ export const authService = {
     }
   },
 
+  // Create system user
+  async createSystemUser(userData) {
+    try {
+      const response = await api.post('/users/system', {
+        username: userData.cosmicl_you_username,
+        fullName: userData.designation_fullname,
+        email: userData.verification_email,
+        systemEmail: `${userData.cosmicl_you_username}@ld-csmlmail.test`
+      })
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // Configure user mail
+  async configureUserMail(userData) {
+    try {
+      const response = await api.post('/users/mail-config', {
+        username: userData.cosmicl_you_username,
+        email: userData.verification_email,
+        systemEmail: `${userData.cosmicl_you_username}@ld-csmlmail.test`
+      })
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // Send verification email
+  async sendVerificationEmail(userData) {
+    try {
+      const response = await api.post('/users/send-verification', {
+        username: userData.cosmicl_you_username,
+        email: userData.verification_email
+      })
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // Verify email
   async verifyEmail(token) {
     try {
-      const response = await authApi.post('/verify-email', { token })
+      const response = await api.post('/users/verify-email', { token })
       return response.data
     } catch (error) {
       throw error

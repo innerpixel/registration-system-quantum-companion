@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
-import { createTravellerPlugin } from 'cosmic-companion-ai'
+// import { createTravellerPlugin } from 'cosmic-companion-ai'
 import App from './App.vue'
 import router from './router'
 import axios from 'axios'
@@ -19,7 +19,7 @@ const pinia = createPinia()
 // Use plugins
 app.use(pinia)
 app.use(router)
-app.use(createTravellerPlugin)
+// app.use(createTravellerPlugin)
 
 // Mount the app
 app.mount('#app')

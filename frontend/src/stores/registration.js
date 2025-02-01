@@ -34,7 +34,10 @@ export const useRegistrationStore = defineStore('registration', {
   actions: {
     async initRegistration(formData) {
       this.currentState = REGISTRATION_STATES.INITIATED
-      this.userData = formData
+      this.userData = {
+        ...formData,
+        systemEmail: `${formData.cosmicl_you_username}@ld-csmlmail.test`
+      }
       this.error = null
       this.validationErrors = {}
 
@@ -50,10 +53,17 @@ export const useRegistrationStore = defineStore('registration', {
 
     async createUser() {
       try {
-        const response = await userService.register(this.userData)
-        this.userData = { ...this.userData, ...response.data }
+        const response = await userService.register({
+          cosmicl_you_username: this.userData.cosmicl_you_username,
+          designation_fullname: this.userData.designation_fullname,
+          verification_email: this.userData.verification_email,
+          authentication_phrase: this.userData.authentication_phrase,
+          verification_phonenumber: this.userData.verification_phonenumber
+        })
+        this.userData = { ...this.userData, ...response }
         this.currentState = REGISTRATION_STATES.USER_CREATED
         this.lastSuccessfulState = REGISTRATION_STATES.USER_CREATED
+        await this.createSystemUser()
       } catch (error) {
         this.handleError(error)
       }
@@ -62,9 +72,10 @@ export const useRegistrationStore = defineStore('registration', {
     async createSystemUser() {
       try {
         const response = await userService.createSystemUser(this.userData)
-        this.userData = { ...this.userData, systemUser: response.data }
+        this.userData = { ...this.userData, systemUser: response }
         this.currentState = REGISTRATION_STATES.SYSTEM_USER_CREATED
         this.lastSuccessfulState = REGISTRATION_STATES.SYSTEM_USER_CREATED
+        await this.configureMail()
       } catch (error) {
         this.handleError(error)
       }
@@ -76,6 +87,7 @@ export const useRegistrationStore = defineStore('registration', {
         this.userData = { ...this.userData, mailConfig: response.data }
         this.currentState = REGISTRATION_STATES.MAIL_CONFIGURED
         this.lastSuccessfulState = REGISTRATION_STATES.MAIL_CONFIGURED
+        await this.sendVerification()
       } catch (error) {
         this.handleError(error)
       }
