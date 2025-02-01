@@ -1,0 +1,31 @@
+/etc/hosts
+# port 80                                                                      
+127.0.0.1 localhost
+127.0.1.1 csmcl-nexus.local 
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# wanted domains which mimmic the actual CSMCL Nexus
+127.0.0.1 csmcl-space.local
+127.0.0.1 cosmical-me.local
+
+127.0.0.1 www.csmcl-space.local
+127.0.0.1 api.csmcl-space.local
+127.0.0.1 auth.csmcl-space.local
+127.0.0.1 admin.csmcl-space.local
+127.0.0.1 mail.cosmical-me.local
+
+# current local domains
+127.0.0.1 ld-csmclnexux.test
+127.0.0.1 ld-csmlmail.test
+127.0.0.1 preprod.local
+127.0.0.1 www.preprod.local
+127.0.0.1 api.preprod.local
+127.0.0.1 auth.preprod.local
+127.0.0.1 admin.preprod.local
+127.0.0.1 mail.preprod.local .. 
