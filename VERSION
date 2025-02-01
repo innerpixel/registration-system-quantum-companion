@@ -1,0 +1,10 @@
+1.1.0-csmcl.1
+
+Original Version: 2c720e754d8fab2179bd57c4a2f8ac56ec06057b
+Fork Date: 2025-02-01
+Features:
+- Quantum nexus integration
+- Auth store
+- Enhanced error handling
+- Role-based metrics
+- CSMCL.space integration

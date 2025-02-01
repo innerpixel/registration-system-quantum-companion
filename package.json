@@ -1,6 +1,6 @@
 {
   "name": "cosmic-companion-ai",
-  "version": "1.0.0",
+  "version": "1.1.0-csmcl.1",
   "description": "An AI companion component for space-themed Vue applications",
   "type": "module",
   "exports": {
