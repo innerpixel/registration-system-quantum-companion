@@ -2,9 +2,9 @@ name: Deploy Quantum Beacon to GitHub Pages
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ feature/quantum-beacon-interface ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ feature/quantum-beacon-interface ]
   workflow_dispatch:
 
 jobs:
